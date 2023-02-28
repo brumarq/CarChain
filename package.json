@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.0.2",
+    "solc": "^0.8.18"
+  }
+}
