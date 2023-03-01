@@ -14,7 +14,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
+        sans: ["Lato", ...fontFamily.sans],
       },
       keyframes: {
         "accordion-down": {
