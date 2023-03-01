@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useReducer, useCallback, useEffect } from "react";
 import Web3 from "web3";
 import EthContext from "./EthContext";
@@ -29,7 +31,7 @@ function EthProvider({ children }: { children: React.ReactElement }) {
   useEffect(() => {
     const tryInit = async () => {
       try {
-        const artifact = require("../../contracts/SimpleStorage.json");
+        const artifact = require("./../../../build/contracts/CarSale.json");
         init(artifact);
       } catch (err) {
         console.error(err);
