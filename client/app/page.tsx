@@ -1,138 +1,183 @@
-"use client"
+"use client";
 
-import Image from "next/image";
 import { Inter } from "@next/font/google";
-import styles from "./page.module.css";
+import useEth from "@/contexts/EthContext/useEth";
 
-const inter = Inter({ subsets: ["latin"] });
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropDownMenu";
 
-import {
-  Cloud,
-  CreditCard,
-  Github,
-  Keyboard,
-  LifeBuoy,
-  LogOut,
-  Mail,
-  MessageSquare,
-  Plus,
-  PlusCircle,
-  Settings,
-  User,
-  UserPlus,
-  Users,
-} from "lucide-react";
+const products1 = [
+  {
+    id: 1,
+    name: "Focus Paper Refill",
+    href: "#",
+    price: "$13",
+    description: "3 sizes available",
+    imageSrc:
+      "https://tailwindui.com/img/ecommerce-images/category-page-01-image-card-01.jpg",
+    imageAlt:
+      "Person using a pen to cross a task off a productivity paper card.",
+  },
+  {
+    id: 2,
+    name: "Focus Card Holder",
+    href: "#",
+    price: "$64",
+    description: "Walnut",
+    imageSrc:
+      "https://tailwindui.com/img/ecommerce-images/category-page-01-image-card-02.jpg",
+    imageAlt: "Paper card sitting upright in walnut card holder on desk.",
+  },
+  {
+    id: 3,
+    name: "Focus Carry Pouch",
+    href: "#",
+    price: "$32",
+    description: "Heather Gray",
+    imageSrc:
+      "https://tailwindui.com/img/ecommerce-images/category-page-01-image-card-03.jpg",
+    imageAlt:
+      "Textured gray felt pouch for paper cards with snap button flap and elastic pen holder loop.",
+  },
+  // More products...
+];
+const products2 = [
+  {
+    id: 7,
+    name: "Electric Kettle",
+    href: "#",
+    price: "$149",
+    description: "Black",
+    imageSrc:
+      "https://tailwindui.com/img/ecommerce-images/category-page-01-image-card-07.jpg",
+    imageAlt:
+      "Close up of long kettle spout pouring boiling water into pour-over coffee mug with frothy coffee.",
+  },
+  {
+    id: 8,
+    name: "Leather Workspace Pad",
+    href: "#",
+    price: "$165",
+    description: "Black",
+    imageSrc:
+      "https://tailwindui.com/img/ecommerce-images/category-page-01-image-card-08.jpg",
+    imageAlt:
+      "Extra large black leather workspace pad on desk with computer, wooden shelf, desk organizer, and computer peripherals.",
+  },
+  {
+    id: 9,
+    name: "Leather Long Wallet",
+    href: "#",
+    price: "$118",
+    description: "Natural",
+    imageSrc:
+      "https://tailwindui.com/img/ecommerce-images/category-page-01-image-card-09.jpg",
+    imageAlt:
+      "Leather long wallet held open with hand-stitched card dividers, full-length bill pocket, and simple tab closure.",
+  },
+  // More products...
+];
 
-import { Button } from "@/components/ui/button";
+
 import { EthProvider } from "@/contexts/EthContext";
-import Test from "@/components/car/Test";
+import { useEffect } from "react";
 
 export default function Home() {
+  const result:any = useEth();
+  const {contract, accounts} = result.state
+
+  const createCar = async() => {
+    await contract.methods.createCar("gello", "gello","gello","gello","gello",1234567, 3000, true).send({ from: accounts[0] })
+  }
+
+  const getAllCars = async ()=> {
+    const value = await contract.methods.getCarsForSale().call({ from: accounts[0] });
+    console.log(value);
+    
+    
+   /*  const value = await contract.methods.read().call({ from: accounts[0] });
+    setValue(value); */
+  }
+
+  useEffect(() => {
+    console.log(result);
+    
+    //createCar()
+    getAllCars()
+  })
+
   return (
-    <EthProvider>
-      <main className="font-lato">
-        <Test></Test>
-        {/* <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">Open</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard className="mr-2 h-4 w-4" />
-                <span>Billing</span>
-                <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-                <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Keyboard className="mr-2 h-4 w-4" />
-                <span>Keyboard shortcuts</span>
-                <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Users className="mr-2 h-4 w-4" />
-                <span>Team</span>
-              </DropdownMenuItem>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  <span>Invite users</span>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem>
-                      <Mail className="mr-2 h-4 w-4" />
-                      <span>Email</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      <span>Message</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      <span>More...</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-              <DropdownMenuItem>
-                <Plus className="mr-2 h-4 w-4" />
-                <span>New Team</span>
-                <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Github className="mr-2 h-4 w-4" />
-              <span>GitHub</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <LifeBuoy className="mr-2 h-4 w-4" />
-              <span>Support</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled>
-              <Cloud className="mr-2 h-4 w-4" />
-              <span>API</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-              <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu> */}
-      </main>
-    </EthProvider>
+    <>
+      <div className="bg-gray-50">
+          <main>
+            <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+              <div className="py-24 text-center">
+                <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+                  Car Chain
+                </h1>
+                <p className="mx-auto mt-4 max-w-3xl text-base text-gray-500">
+                  Buy your car securely.
+                </p>
+              </div>
+
+              {/* Product grid */}
+              <section aria-labelledby="products-heading" className="mt-8">
+                <h2 id="products-heading" className="sr-only">
+                  Products
+                </h2>
+
+                <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                  {products1.map((product) => (
+                    <a key={product.id} href={product.href} className="group">
+                      <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg sm:aspect-w-2 sm:aspect-h-3">
+                        <img
+                          src={product.imageSrc}
+                          alt={product.imageAlt}
+                          className="h-full w-full object-cover object-center group-hover:opacity-75"
+                        />
+                      </div>
+                      <div className="mt-4 flex items-center justify-between text-base font-medium text-gray-900">
+                        <h3>{product.name}</h3>
+                        <p>{product.price}</p>
+                      </div>
+                      <p className="mt-1 text-sm italic text-gray-500">
+                        {product.description}
+                      </p>
+                    </a>
+                  ))}
+                </div>
+              </section>
+              <section
+                aria-labelledby="more-products-heading"
+                className="mt-16 pb-24"
+              >
+                <h2 id="more-products-heading" className="sr-only">
+                  More products
+                </h2>
+
+                <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                  {products2.map((product) => (
+                    <a key={product.id} href={product.href} className="group">
+                      <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg sm:aspect-w-2 sm:aspect-h-3">
+                        <img
+                          src={product.imageSrc}
+                          alt={product.imageAlt}
+                          className="h-full w-full object-cover object-center group-hover:opacity-75"
+                        />
+                      </div>
+                      <div className="mt-4 flex items-center justify-between text-base font-medium text-gray-900">
+                        <h3>{product.name}</h3>
+                        <p>{product.price}</p>
+                      </div>
+                      <p className="mt-1 text-sm italic text-gray-500">
+                        {product.description}
+                      </p>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </main>
+        </div>
+      </>
   );
 }
