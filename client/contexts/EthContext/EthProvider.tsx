@@ -10,13 +10,15 @@ function EthProvider({ children }: { children: React.ReactElement }) {
 
   const init = useCallback(async (artifact: { networks?: any; abi?: any }) => {
     if (artifact) {
-      const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+      const web3 = new Web3(Web3.givenProvider || "localhost:8545");
       const accounts = await web3.eth.requestAccounts();
       const networkID = await web3.eth.net.getId();
+      
       const { abi } = artifact;
       let address, contract;
       try {
         address = artifact.networks[networkID].address;
+        
         contract = new web3.eth.Contract(abi, address);
       } catch (err) {
         console.error(err);
