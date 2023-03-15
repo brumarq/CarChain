@@ -1,7 +1,16 @@
-pragma solidity >=0.8.17;
+pragma solidity ^0.8.0;
 
-contract CarSale {
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+
+contract CarSale is ERC721 {
+    using Counters for Counters.Counter;
+    Counters.Counter private _tokenIds;
+
+    constructor() ERC721("CarSaleNFT", "PFT") {}
+
     struct Car {
+        uint256 carId;
         string licensePlate;
         string chassisNumber;
         string brand;
@@ -13,60 +22,68 @@ contract CarSale {
         bool isForSale;
     }
 
-    mapping(string => Car) public cars;
-    string[] private carsIdentifiers;    
-    uint private amountOfCars;
+    mapping(uint256 => Car) private _cars;
+    mapping(string => uint256) private _chassisNumberToTokenId;
 
-
-    function createCar(string memory _licensePlate, string memory _chassisNumber, string memory _brand, string memory _carType, string memory _color, uint256 _mileage, uint256 _price,bool _isForsale) public {
-        require(cars[_chassisNumber].owner == address(0), "Car with this chassis number already exists");
-        Car memory newCar = Car(_licensePlate, _chassisNumber, _brand, _carType, _color, _mileage, msg.sender, _price, _isForsale);
-        cars[_chassisNumber] = newCar;
-        carsIdentifiers.push(_chassisNumber);
-        amountOfCars++;
+    function createCar(string memory licensePlate, string memory chassisNumber, string memory brand, string memory carType, string memory color, uint256 mileage, uint256 price, bool isForSale) public {
+        require(_chassisNumberToTokenId[chassisNumber] == 0, "Car with this chassis number already exists");
+        _tokenIds.increment();
+        uint256 newCarId = _tokenIds.current();
+        _cars[newCarId] = Car(newCarId, licensePlate, chassisNumber, brand, carType, color, mileage, msg.sender, price, isForSale);
+        _chassisNumberToTokenId[chassisNumber] = newCarId;
+        _safeMint(msg.sender, newCarId);
     }
 
-    function updateCarMileage(uint256 _mileage, string memory _chassisNumber) public {
-        require(cars[_chassisNumber].owner == msg.sender, "Only the car owner can update the mileage");
-        require(_mileage > cars[_chassisNumber].mileage, "New mileage must be higher than previous mileage");
-        cars[_chassisNumber].mileage = _mileage;
+    function updateCarMileage(uint256 mileage, uint256 carId) public {
+        require(_isApprovedOrOwner(msg.sender, carId), "Only the car owner can update the mileage");
+        require(mileage > _cars[carId].mileage, "New mileage must be higher than previous mileage");
+        _cars[carId].mileage = mileage;
     }
 
-    function getCarData(string memory _chassisNumber) public view returns (Car memory) {
-        //require(cars[_chassisNumber].owner != address(0), "Invalid chassis number");
-        return (cars[_chassisNumber]);
+    function getCarData(uint256 carId) public view returns (Car memory) {
+        return (_cars[carId]);
     }
 
-    function setCarForSale(uint256 _price, string memory _chassisNumber) public {
-        require(cars[_chassisNumber].owner == msg.sender, "Only the car owner can put the car for sale");
-        cars[_chassisNumber].isForSale = true;
-        cars[_chassisNumber].price = _price;
+    function setCarForSale(uint256 price, uint256 carId) public {
+        require(_isApprovedOrOwner(msg.sender, carId), "Only the car owner can put the car for sale");
+        _cars[carId].isForSale = true;
+        _cars[carId].price = price;
     }
 
-    function adjustSalePrice(uint256 _price, string memory _chassisNumber) public {
-        require(cars[_chassisNumber].owner == msg.sender, "Only the car owner can adjust the sale price.");
-        require(cars[_chassisNumber].isForSale == true, "The car must be for sale to adjust the price.");
-        cars[_chassisNumber].price = _price;
+    function adjustSalePrice(uint256 price, uint256 carId) public {
+        require(_isApprovedOrOwner(msg.sender, carId), "Only the car owner can adjust the sale price.");
+        require(_cars[carId].isForSale == true, "The car must be for sale to adjust the price.");
+        _cars[carId].price = price;
     }
 
-    function buyCar(string memory _chassisNumber) public payable {
-        require(cars[_chassisNumber].owner != address(0), "Invalid chassis number");
-        require(cars[_chassisNumber].isForSale == true, "Car is not for sale");
-        require(msg.value == cars[_chassisNumber].price, "Incorrect payment amount");
-        payable(cars[_chassisNumber].owner).transfer(msg.value);
-        cars[_chassisNumber].owner = msg.sender;
-        cars[_chassisNumber].isForSale = false;
+    function buyCar(uint256 carId) public payable {
+        require(_exists(carId), "Invalid car ID");
+        require(_cars[carId].isForSale == true, "Car is not for sale");
+        require(msg.value == _cars[carId].price, "Incorrect payment amount");
+        address owner = ownerOf(carId);
+        payable(owner).transfer(msg.value);
+        _transfer(owner, msg.sender, carId);
+        _cars[carId].owner = msg.sender;
+        _cars[carId].isForSale = false;
     }
 
     function getCarsForSale() public view returns (Car[] memory) {
-        Car[] memory result = new Car[](amountOfCars);
+        uint256 count = 0;
+        for (uint256 i = 1; i <= _tokenIds.current(); i++) {
+            if (_cars[i].isForSale == true) {
+                count++;
+            }
+        }
+
+        Car[] memory carsForSale = new Car[](count);
         uint256 index = 0;
-        for (uint256 i = 0; i < amountOfCars; i++) {
-            if (cars[carsIdentifiers[i]].isForSale) {
-                result[index] = cars[carsIdentifiers[i]];
+
+        for (uint256 i = 1; i <= _tokenIds.current(); i++) {
+            if (_cars[i].isForSale == true) {
+                carsForSale[index] = _cars[i];
                 index++;
             }
         }
-        return result;
+        return carsForSale;
     }
 }
