@@ -2,13 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
-import { Field, useFormik } from "formik";
+import { useFormik } from "formik";
 import { useEth } from "@/contexts/EthContext";
 import { useToast } from "@/hooks/useToast"
 import { Toaster } from "@/components/ui/toaster";
+
+import { create } from 'ipfs-http-client'
+
 
 export default function AddCar() {
   const { toast } = useToast()
@@ -28,7 +30,10 @@ export default function AddCar() {
       image: "",
     },
     onSubmit: async (values) => {
-      await contract.methods
+      const client = create({ url: "http://127.0.0.1:5002/api/v0" })
+      
+      await client.add(values.image).then(async (cid)=>{
+        await contract.methods
         .createCar(
           values.licensePlate,
           values.chassisNumber,
@@ -37,7 +42,8 @@ export default function AddCar() {
           values.color,
           values.mileage,
           values.price,
-          values.onSale
+          values.onSale,
+          cid.path
         )
         .send({ from: accounts[0] }).then(()=>{
           toast({
@@ -45,6 +51,7 @@ export default function AddCar() {
             description: "If your car is on sale, you should see it on the listing.",
           })
         });
+      })
     },
   });
 
@@ -258,6 +265,9 @@ export default function AddCar() {
                                 name="file-upload"
                                 type="file"
                                 className="sr-only"
+                                onChange={(e: any) =>
+                                  formik.setFieldValue('image', e.currentTarget.files[0])
+                                }
                               />
                             </Label>
                             <p className="pl-1">or drag and drop</p>
