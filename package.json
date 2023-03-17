@@ -2,6 +2,7 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.2",
     "@radix-ui/react-dropdown-menu": "^2.0.2",
+    "ipfs-http-client": "^60.0.0",
     "solc": "^0.8.18"
   }
 }
