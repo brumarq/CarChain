@@ -15,7 +15,7 @@ import { create } from 'ipfs-http-client'
 export default function AddCar() {
   const { toast } = useToast()
   const result: any = useEth();
-  const { contract, accounts } = result.state;
+  const { contract, accounts, web3 } = result.state;
 
   const formik = useFormik({
     initialValues: {
@@ -31,7 +31,8 @@ export default function AddCar() {
     },
     onSubmit: async (values) => {
       const client = create({ url: "http://127.0.0.1:5002/api/v0" })
-      
+      const carPrice = web3.utils.toWei(values.price.toString(), 'ether');
+
       await client.add(values.image).then(async (cid)=>{
         await contract.methods
         .createCar(
@@ -41,7 +42,7 @@ export default function AddCar() {
           values.type,
           values.color,
           values.mileage,
-          values.price,
+          carPrice,
           values.onSale,
           cid.path
         )

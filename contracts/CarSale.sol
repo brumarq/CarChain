@@ -61,7 +61,8 @@ contract CarSale is ERC721 {
         require(_exists(carId), "Invalid car ID");
         require(_cars[carId].isForSale == true, "Car is not for sale");
         require(msg.value == _cars[carId].price, "Incorrect payment amount");
-        address owner = ownerOf(carId);
+
+        address owner = _cars[carId].owner;
         payable(owner).transfer(msg.value);
         _transfer(owner, msg.sender, carId);
         _cars[carId].owner = msg.sender;
