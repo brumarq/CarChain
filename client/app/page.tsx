@@ -21,6 +21,8 @@ export default function Home() {
         .getCarsForSale()
         .call({ from: accounts[0] });
 
+        console.log(`https://ipfs.io/ipfs/${value[0].picture[0]}`);
+        
       setCars(value);
       setLoading(false);
     }
@@ -60,7 +62,7 @@ export default function Home() {
                     <Link className="p-5 group" key={car.id} href={`/car/${car.carId}`}>
                       <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg sm:aspect-w-2 sm:aspect-h-3">
                         <Image
-                          src={`https://ipfs.io/ipfs/${car.picture}`}
+                          src={`https://ipfs.io/ipfs/${car.picture[0]}`}
                           alt="Picture of the author"
                           className="h-80 w-full object-cover object-center group-hover:opacity-75"
                           width={1000}

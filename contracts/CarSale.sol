@@ -20,13 +20,13 @@ contract CarSale is ERC721 {
         address owner;
         uint256 price;
         bool isForSale;
-        string picture;
+        string[] picture;
     }
 
     mapping(uint256 => Car) private _cars;
     mapping(string => uint256) private _chassisNumberToTokenId;
 
-    function createCar(string memory licensePlate, string memory chassisNumber, string memory brand, string memory carType, string memory color, uint256 mileage, uint256 price, bool isForSale, string memory picture) public {
+    function createCar(string memory licensePlate, string memory chassisNumber, string memory brand, string memory carType, string memory color, uint256 mileage, uint256 price, bool isForSale, string[] memory picture) public {
         require(_chassisNumberToTokenId[chassisNumber] == 0, "Car with this chassis number already exists");
         _tokenIds.increment();
         uint256 newCarId = _tokenIds.current();

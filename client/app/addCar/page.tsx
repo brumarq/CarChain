@@ -6,16 +6,21 @@ import { Label } from "@/components/ui/label";
 
 import { useFormik } from "formik";
 import { useEth } from "@/contexts/EthContext";
-import { useToast } from "@/hooks/useToast"
+import { useToast } from "@/hooks/useToast";
 import { Toaster } from "@/components/ui/toaster";
 
-import { create } from 'ipfs-http-client'
+import { create } from "ipfs-http-client";
+import { useState } from "react";
 
+import { FileUploader } from "react-drag-drop-files";
+
+const fileTypes = ["JPEG", "PNG", "png", "jpg"];
 
 export default function AddCar() {
-  const { toast } = useToast()
+  const { toast } = useToast();
   const result: any = useEth();
   const { contract, accounts, web3 } = result.state;
+  const [files, setFiles] = useState([]);
 
   const formik = useFormik({
     initialValues: {
@@ -30,11 +35,17 @@ export default function AddCar() {
       image: "",
     },
     onSubmit: async (values) => {
-      const client = create({ url: "http://127.0.0.1:5002/api/v0" })
-      const carPrice = web3.utils.toWei(values.price.toString(), 'ether');
+      const client = create({ url: "http://127.0.0.1:5002/api/v0" });
+      const carPrice = web3.utils.toWei(values.price.toString(), "ether");
 
-      await client.add(values.image).then(async (cid)=>{
-        await contract.methods
+      const arrayOfCid = [];
+      for await (const result of client.addAll(files)) {
+        arrayOfCid.push(result.path);
+      }
+
+      console.log(arrayOfCid);
+      
+      await contract.methods
         .createCar(
           values.licensePlate,
           values.chassisNumber,
@@ -44,15 +55,16 @@ export default function AddCar() {
           values.mileage,
           carPrice,
           values.onSale,
-          cid.path
+          arrayOfCid
         )
-        .send({ from: accounts[0] }).then(()=>{
+        .send({ from: accounts[0] })
+        .then(() => {
           toast({
             title: "Your car has been added.",
-            description: "If your car is on sale, you should see it on the listing.",
-          })
+            description:
+              "If your car is on sale, you should see it on the listing.",
+          });
         });
-      })
     },
   });
 
@@ -236,49 +248,59 @@ export default function AddCar() {
                       htmlFor="postal-code"
                       className="block text-sm font-medium leading-6 "
                     >
-                      Image
+                      Images
                     </Label>
-                    <div className="mt-2">
-                      <div className="flex justify-center rounded-md border-2 border-dashed border-slate-300 px-6 pt-5 pb-6">
-                        <div className="space-y-1 text-center">
-                          <svg
-                            className="mx-auto h-12 w-12 text-gray-400"
-                            stroke="currentColor"
-                            fill="none"
-                            viewBox="0 0 48 48"
-                            aria-hidden="true"
-                          >
-                            <path
-                              d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                              strokeWidth={2}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          <div className=" text-sm text-gray-600">
-                            <Label
-                              htmlFor="file-upload"
-                              className="bg-slate-200 rounded-md p-0.5"
+                    <FileUploader
+                      className={
+                        "flex justify-center rounded-md border-2 border-dashed border-slate-300 px-6 pt-5 pb-6"
+                      }
+                      multiple={true}
+                      handleChange={(givenFiles: FileList) => {
+                        const filess = [];
+                        for (let i = 0; i < givenFiles.length; ++i) {
+                          filess.push(givenFiles[i]);
+                        }
+
+                        setFiles([...files, ...filess]);
+                        console.log(files);
+                      }}
+                      name="file"
+                      types={fileTypes}
+                    >
+                      <div className="mt-2">
+                        <div className="flex justify-center rounded-md border-2 border-dashed border-slate-300 px-6 pt-5 pb-6">
+                          <div className="space-y-1 text-center">
+                            <svg
+                              className="mx-auto h-12 w-12 text-gray-400"
+                              stroke="currentColor"
+                              fill="none"
+                              viewBox="0 0 48 48"
+                              aria-hidden="true"
                             >
-                              <span>Upload a file</span>
-                              <Input
-                                id="file-upload"
-                                name="file-upload"
-                                type="file"
-                                className="sr-only"
-                                onChange={(e: any) =>
-                                  formik.setFieldValue('image', e.currentTarget.files[0])
-                                }
+                              <path
+                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               />
-                            </Label>
-                            <p className="pl-1">or drag and drop</p>
+                            </svg>
+                            <p>Click or drop your files.</p>
+                            <div className="grid grid-rows-3 grid-flow-col gap-4 pt-5">
+                              {files.map((file, key) => {
+                                return (
+                                  <div key={key} className="row-span-2">
+                                    <img
+                                      className="h-32 rounded-md"
+                                      src={URL.createObjectURL(file)}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                          <p className="text-xs text-gray-500">
-                            PNG, JPG, GIF up to 10MB
-                          </p>
                         </div>
                       </div>
-                    </div>
+                    </FileUploader>
                   </div>
                 </div>
               </div>
