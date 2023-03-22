@@ -23,8 +23,15 @@ contract CarSale is ERC721 {
         string[] picture;
     }
 
+    struct MileageHistory {
+        uint256 mileage;
+        address changer;
+        uint256 timestamp;
+    }
+
     mapping(uint256 => Car) private _cars;
     mapping(string => uint256) private _chassisNumberToTokenId;
+    mapping(uint256 => MileageHistory[]) private _mileageHistories;
 
     function createCar(string memory licensePlate, string memory chassisNumber, string memory brand, string memory carType, string memory color, uint256 mileage, uint256 price, bool isForSale, string[] memory picture) public {
         require(_chassisNumberToTokenId[chassisNumber] == 0, "Car with this chassis number already exists");
@@ -32,13 +39,23 @@ contract CarSale is ERC721 {
         uint256 newCarId = _tokenIds.current();
         _cars[newCarId] = Car(newCarId, licensePlate, chassisNumber, brand, carType, color, mileage, msg.sender, price, isForSale, picture);
         _chassisNumberToTokenId[chassisNumber] = newCarId;
+
+        MileageHistory memory newEntry = MileageHistory(mileage, msg.sender, block.timestamp);
+        _mileageHistories[newCarId].push(newEntry);
+
         _safeMint(msg.sender, newCarId);
     }
 
     function updateCarMileage(uint256 mileage, uint256 carId) public {
         require(_isApprovedOrOwner(msg.sender, carId), "Only the car owner can update the mileage");
         require(mileage > _cars[carId].mileage, "New mileage must be higher than previous mileage");
+        MileageHistory memory newEntry = MileageHistory(mileage, msg.sender, block.timestamp);
+        _mileageHistories[carId].push(newEntry);
         _cars[carId].mileage = mileage;
+    }
+
+    function getMileageHistory(uint256 carId) public view returns (MileageHistory[] memory) {
+        return _mileageHistories[carId];
     }
 
     function getCarData(uint256 carId) public view returns (Car memory) {

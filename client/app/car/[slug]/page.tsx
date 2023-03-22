@@ -53,6 +53,12 @@ export default function Car({ params }: { params: { slug: string } }) {
         .getCarData(params.slug)
         .call({ from: accounts[0] });
 
+      const history = await contract.methods
+        .getMileageHistory(params.slug)
+        .call({ from: accounts[0] });
+
+      console.log(history);
+      
       setCar({
         carId: value.carId,
         licensePlate: value.licensePlate,
@@ -66,6 +72,8 @@ export default function Car({ params }: { params: { slug: string } }) {
         isForSale: value.isForSale,
         picture: value.picture,
       });
+
+      setLoading(false)
     }
   };
 

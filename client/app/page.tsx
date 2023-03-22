@@ -20,8 +20,6 @@ export default function Home() {
       const value = await contract.methods
         .getCarsForSale()
         .call({ from: accounts[0] });
-
-        console.log(`https://ipfs.io/ipfs/${value[0].picture[0]}`);
         
       setCars(value);
       setLoading(false);
