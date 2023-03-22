@@ -37,11 +37,18 @@ interface Car {
   picture: string[];
 }
 
+interface MileageHistory {
+  mileage: number;
+  changer: string;
+  timestamp: number;
+}
+
 export default function Car({ params }: { params: { slug: string } }) {
   const result: any = useEth();
   const { contract, accounts, web3 } = result.state;
   const [loading, setLoading] = useState(true);
   const [car, setCar] = useState<Car>();
+  const [mileageHistory, setMileageHistory] = useState<MileageHistory[]>();
 
   function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(" ");
@@ -57,8 +64,9 @@ export default function Car({ params }: { params: { slug: string } }) {
         .getMileageHistory(params.slug)
         .call({ from: accounts[0] });
 
-      console.log(history);
-      
+      setMileageHistory(history);
+      console.log(history[0].timestamp);
+
       setCar({
         carId: value.carId,
         licensePlate: value.licensePlate,
@@ -73,7 +81,7 @@ export default function Car({ params }: { params: { slug: string } }) {
         picture: value.picture,
       });
 
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -127,7 +135,7 @@ export default function Car({ params }: { params: { slug: string } }) {
                       <Tab.List className="grid grid-cols-4 gap-6 p-2">
                         {car?.picture.map((image) => (
                           <Tab
-                            key={"carSelector-"+image}
+                            key={"carSelector-" + image}
                             className="relative flex h-24 cursor-pointer items-center justify-center rounded-md text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4"
                           >
                             {({ selected }: any) => (
@@ -159,7 +167,7 @@ export default function Car({ params }: { params: { slug: string } }) {
 
                     <Tab.Panels className="aspect-w-1 aspect-h-1 w-full">
                       {car?.picture.map((image) => (
-                        <Tab.Panel key={"selectedImage-"+image}>
+                        <Tab.Panel key={"selectedImage-" + image}>
                           <Image
                             src={`https://ipfs.io/ipfs/${image}`}
                             alt={product.imageAlt}
@@ -181,7 +189,7 @@ export default function Car({ params }: { params: { slug: string } }) {
                     <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                       {car?.brand} {car?.carType}
                     </h1>
-                    <div className="prose prose-sm mt-4 text-gray-300">
+                    <div className="prose prose-sm mt-4 text-gray-300 text-start">
                       <ul role="list">
                         <li>
                           <strong>License plate:</strong> {car?.licensePlate}
@@ -198,6 +206,39 @@ export default function Car({ params }: { params: { slug: string } }) {
                       </ul>
                     </div>
                   </div>
+                </div>
+                <hr className="my-6 text-gray-400" />
+                <div>
+                  <h1 className="text-xl font-bold sm:text-xl text-start">
+                    Miles change history
+                  </h1>
+                  <ul role="list" className="divide-y divide-gray-200">
+                    {mileageHistory?.map((mileageChange, index) => (
+                      <li key={index} className="py-4">
+                        <div className="flex space-x-3">
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-sm font-medium ">
+                                {new Date(
+                                  mileageChange.timestamp * 1000
+                                ).toLocaleDateString("nl-NL", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                })}
+                              </h3>
+                              <p className="text-xs text-gray-400">
+                                {mileageChange.changer}
+                              </p>
+                            </div>
+                            <p className="text-sm text-gray-400 text-start">
+                              Set mileage to {mileageChange.mileage}
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
                 <div className="mt-10 grid gap-x-6 gap-y-4">
