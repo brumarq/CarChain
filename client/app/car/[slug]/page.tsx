@@ -5,6 +5,8 @@ import { useEth } from "@/contexts/EthContext";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Tab } from "@headlessui/react";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const product = {
   name: "Application UI Icon Pack",
@@ -49,6 +51,10 @@ export default function Car({ params }: { params: { slug: string } }) {
   const [loading, setLoading] = useState(true);
   const [car, setCar] = useState<Car>();
   const [mileageHistory, setMileageHistory] = useState<MileageHistory[]>();
+  const [edit, setEdit] = useState(false);
+
+  const [selectedMiles, setSelectedMiles] = useState<string>();
+  const [selectedOnSale, setSelectedOnSale] = useState<boolean>(false);
 
   function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(" ");
@@ -81,6 +87,9 @@ export default function Car({ params }: { params: { slug: string } }) {
         picture: value.picture,
       });
 
+      setSelectedMiles(value.mileage);
+      setSelectedOnSale(value.isForSale);
+
       setLoading(false);
     }
   };
@@ -97,16 +106,25 @@ export default function Car({ params }: { params: { slug: string } }) {
       .on("error", (error: any) => {
         console.error("Transaction failed:", error);
       });
+  };
 
-    /* await contract.methods
-      .buyCar(car?.carId)
-      .send({ from: accounts[0], value: paymentAmount })
-      .on('receipt', (receipt: any) => {
-        console.log('Transaction successful:', receipt);
+  const updateCar = async () => {
+    const paymentAmount = web3.utils.toWei("5", "ether");
+    console.log(selectedOnSale);
+    
+    contract.methods
+      .updateCar(selectedMiles, paymentAmount, selectedOnSale, car?.carId)
+      .send({ from: accounts[0] })
+      .on("receipt", (receipt: any) => {
+        console.log("Update successful:", receipt);
+
+        setEdit(false);
       })
-      .on('error', (error: any) => {
-        console.error('Transaction failed:', error);
-      }); */
+      .on("error", (error: any) => {
+        console.error("Transaction failed:", error);
+
+        setEdit(false);
+      });
   };
 
   useEffect(() => {
@@ -208,6 +226,47 @@ export default function Car({ params }: { params: { slug: string } }) {
                   </div>
                 </div>
                 <hr className="my-6 text-gray-400" />
+                <div className="flex flex-col-reverse">
+                  <div className="prose prose-sm text-gray-300 text-start">
+                    <ul role="list">
+                      <li>
+                        <div className="flex w-full max-w-sm items-center space-x-2">
+                          <strong>Miles: </strong>
+                          {!edit ? (
+                            <span>{car?.mileage} miles</span>
+                          ) : (
+                            <Input
+                              type="text"
+                              value={selectedMiles}
+                              onChange={(e) => setSelectedMiles(e.target.value)}
+                              className="w-full"
+                            />
+                          )}
+                        </div>
+                      </li>
+                      <li>
+                        {edit && (
+                          <div className="flex items-center mt-5 space-x-2">
+                            <Checkbox
+                              id="terms"
+                              defaultChecked={selectedOnSale}
+                              onCheckedChange={(e: any) =>
+                                setSelectedOnSale(!selectedOnSale)
+                              }
+                            />
+                            <label
+                              htmlFor="terms"
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              On sale
+                            </label>
+                          </div>
+                        )}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <hr className="my-6 text-gray-400" />
                 <div>
                   <h1 className="text-xl font-bold sm:text-xl text-start">
                     Miles change history
@@ -242,15 +301,49 @@ export default function Car({ params }: { params: { slug: string } }) {
                 </div>
 
                 <div className="mt-10 grid gap-x-6 gap-y-4">
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-8 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2 focus:ring-offset-gray-50"
-                    onClick={() => {
-                      purchaseCar();
-                    }}
-                  >
-                    Pay {car?.price} ETH
-                  </button>
+                  {!edit ? (
+                    <>
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-8 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2 focus:ring-offset-gray-50"
+                        onClick={() => {
+                          purchaseCar();
+                        }}
+                      >
+                        Pay {car?.price} ETH
+                      </button>
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-center rounded-md border border-transparent bg-gray-500 py-3 px-8 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2 focus:ring-offset-gray-50"
+                        onClick={() => {
+                          setEdit(true);
+                        }}
+                      >
+                        Edit
+                      </button>
+                    </>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-center rounded-md border border-transparent bg-gray-600 py-3 px-8 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+                        onClick={() => {
+                          setEdit(false);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-center rounded-md border border-transparent bg-green-700 py-3 px-8 text-base font-medium text-white hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+                        onClick={() => {
+                          updateCar();
+                        }}
+                      >
+                        Save
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

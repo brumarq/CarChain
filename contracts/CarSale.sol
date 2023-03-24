@@ -46,6 +46,18 @@ contract CarSale is ERC721 {
         _safeMint(msg.sender, newCarId);
     }
 
+    function updateCar(uint256 mileage, uint256 price, bool onSale, uint256 carId) public {
+        if (_cars[carId].mileage != mileage) {
+            updateCarMileage(mileage, carId);
+        }
+
+        setCarForSale(onSale, carId);
+
+        if (_cars[carId].isForSale) {
+            adjustSalePrice(price, carId);
+        }
+    }
+
     function updateCarMileage(uint256 mileage, uint256 carId) public {
         require(_isApprovedOrOwner(msg.sender, carId), "Only the car owner can update the mileage");
         require(mileage > _cars[carId].mileage, "New mileage must be higher than previous mileage");
@@ -62,10 +74,9 @@ contract CarSale is ERC721 {
         return (_cars[carId]);
     }
 
-    function setCarForSale(uint256 price, uint256 carId) public {
+    function setCarForSale(bool forSale, uint256 carId) public {
         require(_isApprovedOrOwner(msg.sender, carId), "Only the car owner can put the car for sale");
-        _cars[carId].isForSale = true;
-        _cars[carId].price = price;
+        _cars[carId].isForSale = forSale;
     }
 
     function adjustSalePrice(uint256 price, uint256 carId) public {
