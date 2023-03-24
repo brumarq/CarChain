@@ -52,7 +52,7 @@ export default function Car({ params }: { params: { slug: string } }) {
   const [car, setCar] = useState<Car>();
   const [mileageHistory, setMileageHistory] = useState<MileageHistory[]>();
   const [edit, setEdit] = useState(false);
-
+  const [ownerBool, setOwnerBool] = useState(false);
   const [selectedMiles, setSelectedMiles] = useState<string>();
   const [selectedOnSale, setSelectedOnSale] = useState<boolean>(false);
 
@@ -70,9 +70,6 @@ export default function Car({ params }: { params: { slug: string } }) {
         .getMileageHistory(params.slug)
         .call({ from: accounts[0] });
 
-      setMileageHistory(history);
-      console.log(history[0].timestamp);
-
       setCar({
         carId: value.carId,
         licensePlate: value.licensePlate,
@@ -89,6 +86,11 @@ export default function Car({ params }: { params: { slug: string } }) {
 
       setSelectedMiles(value.mileage);
       setSelectedOnSale(value.isForSale);
+      setMileageHistory(history);
+
+      if (accounts[0] == value.owner) {
+        setOwnerBool(true);
+      }
 
       setLoading(false);
     }
@@ -111,7 +113,7 @@ export default function Car({ params }: { params: { slug: string } }) {
   const updateCar = async () => {
     const paymentAmount = web3.utils.toWei("5", "ether");
     console.log(selectedOnSale);
-    
+
     contract.methods
       .updateCar(selectedMiles, paymentAmount, selectedOnSale, car?.carId)
       .send({ from: accounts[0] })
@@ -312,15 +314,17 @@ export default function Car({ params }: { params: { slug: string } }) {
                       >
                         Pay {car?.price} ETH
                       </button>
-                      <button
-                        type="button"
-                        className="flex w-full items-center justify-center rounded-md border border-transparent bg-gray-500 py-3 px-8 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2 focus:ring-offset-gray-50"
-                        onClick={() => {
-                          setEdit(true);
-                        }}
-                      >
-                        Edit
-                      </button>
+                      {ownerBool && (
+                        <button
+                          type="button"
+                          className="flex w-full items-center justify-center rounded-md border border-transparent bg-gray-500 py-3 px-8 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2 focus:ring-offset-gray-50"
+                          onClick={() => {
+                            setEdit(true);
+                          }}
+                        >
+                          Edit
+                        </button>
+                      )}
                     </>
                   ) : (
                     <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
