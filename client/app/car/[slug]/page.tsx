@@ -55,6 +55,7 @@ export default function Car({ params }: { params: { slug: string } }) {
   const [ownerBool, setOwnerBool] = useState(false);
   const [selectedMiles, setSelectedMiles] = useState<string>();
   const [selectedOnSale, setSelectedOnSale] = useState<boolean>(false);
+  const [selectedPrice, setSelectedPrice] = useState<string>();
 
   function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(" ");
@@ -85,6 +86,7 @@ export default function Car({ params }: { params: { slug: string } }) {
       });
 
       setSelectedMiles(value.mileage);
+      setSelectedPrice(web3.utils.fromWei(value.price, "ether"));
       setSelectedOnSale(value.isForSale);
       setMileageHistory(history);
 
@@ -111,7 +113,7 @@ export default function Car({ params }: { params: { slug: string } }) {
   };
 
   const updateCar = async () => {
-    const paymentAmount = web3.utils.toWei("5", "ether");
+    const paymentAmount = web3.utils.toWei(selectedPrice, "ether");
     console.log(selectedOnSale);
 
     contract.methods
@@ -327,26 +329,37 @@ export default function Car({ params }: { params: { slug: string } }) {
                       )}
                     </>
                   ) : (
-                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                      <button
-                        type="button"
-                        className="flex w-full items-center justify-center rounded-md border border-transparent bg-gray-600 py-3 px-8 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
-                        onClick={() => {
-                          setEdit(false);
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        className="flex w-full items-center justify-center rounded-md border border-transparent bg-green-700 py-3 px-8 text-base font-medium text-white hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
-                        onClick={() => {
-                          updateCar();
-                        }}
-                      >
-                        Save
-                      </button>
-                    </div>
+                    <>
+                      <div className="flex w-full max-w-sm items-center space-x-2">
+                        <strong>Price: </strong>
+                        <Input
+                          type="text"
+                          value={selectedPrice}
+                          onChange={(e) => setSelectedPrice(e.target.value)}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                        <button
+                          type="button"
+                          className="flex w-full items-center justify-center rounded-md border border-transparent bg-gray-600 py-3 px-8 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+                          onClick={() => {
+                            setEdit(false);
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="flex w-full items-center justify-center rounded-md border border-transparent bg-green-700 py-3 px-8 text-base font-medium text-white hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+                          onClick={() => {
+                            updateCar();
+                          }}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>

@@ -17,7 +17,7 @@ export default function Home() {
   const getAllCars = async () => {
     if (contract) {
       const value = await contract.methods
-        .getCarsForSale()
+        .getCarsByOwner()
         .call({ from: accounts[0] });
         
       setCars(value);
@@ -37,31 +37,21 @@ export default function Home() {
         <main>
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
             <div className="py-24 text-center">
-              <h1 className="text-4xl font-bold tracking-tight">Car Chain</h1>
+              <h1 className="text-4xl font-bold tracking-tight">My cars</h1>
               <p className="mx-auto mt-4 max-w-3xl text-base">
-                Buy your car securely.
+                Here you can find your personal cars
               </p>
             </div>
 
             {/* Product grid */}
             <section aria-labelledby="products-heading" className="mt-8">
               <h2 id="products-heading" className="sr-only">
-                Products
+                Cars
               </h2>
-              <Button className="mb-5 p-0">
-                <Link className="p-5" href={"/addCar"}>
-                  + Add Car
-                </Link>
-              </Button>
-              <Button className="mb-5 p-0 float-right">
-                <Link className="p-5" href={"/myCars"}>
-                  My Cars
-                </Link>
-              </Button>
               {!loading ? (
                 <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
                   {cars.map((car: any) => (
-                    <Link className="p-5 group" key={"carOnSale-"+car.id} href={`/car/${car.carId}`}>
+                    <Link className="p-5 group" key={"ownedCar-"+car.id} href={`/car/${car.carId}`}>
                       <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg sm:aspect-w-2 sm:aspect-h-3">
                         <Image
                           src={`https://ipfs.io/ipfs/${car.picture[0]}`}

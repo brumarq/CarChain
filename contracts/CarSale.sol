@@ -116,4 +116,18 @@ contract CarSale is ERC721 {
         }
         return carsForSale;
     }
+
+    function getCarsByOwner() public view returns (Car[] memory) {
+        uint256 carCount = balanceOf(msg.sender);
+        Car[] memory cars = new Car[](carCount);
+        uint256 j = 0;
+        uint256 totalCars = _tokenIds.current();
+        for (uint256 i = 1; i <= totalCars; i++) {
+            if (_exists(i) && ownerOf(i) == msg.sender) {
+                cars[j] = _cars[i];
+                j++;
+            }
+        }
+        return cars;
+    }
 }
