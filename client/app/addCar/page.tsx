@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { redirect } from 'next/navigation';
 
 import { useFormik } from "formik";
 import { useEth } from "@/contexts/EthContext";
@@ -35,6 +36,8 @@ export default function AddCar() {
       image: "",
     },
     onSubmit: async (values) => {
+      console.log("hey");
+
       const client = create({ url: "http://127.0.0.1:5002/api/v0" });
       const carPrice = web3.utils.toWei(values.price.toString(), "ether");
 
@@ -43,8 +46,6 @@ export default function AddCar() {
         arrayOfCid.push(result.path);
       }
 
-      console.log(arrayOfCid);
-      
       await contract.methods
         .createCar(
           values.licensePlate,
@@ -58,19 +59,28 @@ export default function AddCar() {
           arrayOfCid
         )
         .send({ from: accounts[0] })
-        .then(() => {
-          toast({
+        .on("receipt", (receipt: any) => {
+          
+          redirect("/")
+          /* toast({
             title: "Your car has been added.",
             description:
               "If your car is on sale, you should see it on the listing.",
-          });
+          }); */
+
+        })
+        .catch((error: any) => {
+            toast({
+              title: "Transaction rejected!",
+              description:
+                "This transaction has been rejected, no action took place.",
+            })
         });
     },
   });
 
   return (
     <div className="dark:bg-slate-900 h-100">
-      <Toaster></Toaster>
       <main>
         <div className="py-24 text-center">
           <h1 className="text-4xl font-bold tracking-tight ">Add a new car</h1>

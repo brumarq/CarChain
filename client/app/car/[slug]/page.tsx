@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Tab } from "@headlessui/react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/useToast";
 
 const product = {
   name: "Application UI Icon Pack",
@@ -46,6 +47,7 @@ interface MileageHistory {
 }
 
 export default function Car({ params }: { params: { slug: string } }) {
+  const { toast } = useToast();
   const result: any = useEth();
   const { contract, accounts, web3 } = result.state;
   const [loading, setLoading] = useState(true);
@@ -105,10 +107,18 @@ export default function Car({ params }: { params: { slug: string } }) {
       .buyCar(car?.carId)
       .send({ value: paymentAmount, from: accounts[0], to: car?.owner })
       .on("receipt", (receipt: any) => {
-        console.log("Transaction successful:", receipt);
+        toast({
+          title: "Car has been purchased!",
+          description:
+            "You can find the car in your catalogue!",
+        });
       })
-      .on("error", (error: any) => {
-        console.error("Transaction failed:", error);
+      .catch((error: any) => {
+          toast({
+            title: "Transaction rejected!",
+            description:
+              "This transaction has been rejected, no action took place.",
+          })
       });
   };
 

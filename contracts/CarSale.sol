@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract CarSale is ERC721 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
-
     constructor() ERC721("CarSaleNFT", "PFT") {}
 
     struct Car {
@@ -35,6 +34,7 @@ contract CarSale is ERC721 {
 
     function createCar(string memory licensePlate, string memory chassisNumber, string memory brand, string memory carType, string memory color, uint256 mileage, uint256 price, bool isForSale, string[] memory picture) public {
         require(_chassisNumberToTokenId[chassisNumber] == 0, "Car with this chassis number already exists");
+        require(bytes(licensePlate).length != 0 && bytes(chassisNumber).length != 0 && bytes(brand).length != 0 && bytes(carType).length != 0 && bytes(color).length != 0, "Make sure to fill all the necessary fields.");
         _tokenIds.increment();
         uint256 newCarId = _tokenIds.current();
         _cars[newCarId] = Car(newCarId, licensePlate, chassisNumber, brand, carType, color, mileage, msg.sender, price, isForSale, picture);

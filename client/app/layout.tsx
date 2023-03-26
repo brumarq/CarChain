@@ -22,7 +22,7 @@ export default function RootLayout({
           <EthProvider>
             <ThemeProvider>
               {children}
-
+              <Toaster></Toaster>
             </ThemeProvider>
           </EthProvider>
         </body>
