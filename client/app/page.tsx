@@ -3,14 +3,13 @@
 import useEth from "@/contexts/EthContext/useEth";
 import Image from "next/image";
 
-import { EthProvider } from "@/contexts/EthContext";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function Home() {
   const result: any = useEth();
-  const { contract, accounts } = result.state;
+  const { contract, accounts, web3 } = result.state;
   const [loading, setLoading] = useState(true);
   const [cars, setCars] = useState([]);
 
@@ -19,16 +18,14 @@ export default function Home() {
       const value = await contract.methods
         .getCarsForSale()
         .call({ from: accounts[0] });
-        
+
       setCars(value);
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (loading) {
-      getAllCars();
-    }
+    getAllCars();
   });
 
   return (
@@ -49,19 +46,23 @@ export default function Home() {
                 Products
               </h2>
               <Button className="mb-5 p-0">
-                <Link className="p-5" href={"/addCar"}>
+                <Link className="p-5" href={"/addCar"} prefetch={false}>
                   + Add Car
                 </Link>
               </Button>
               <Button className="mb-5 p-0 float-right">
-                <Link className="p-5" href={"/myCars"}>
+                <Link className="p-5" href={"/myCars"} prefetch={false}>
                   My Cars
                 </Link>
               </Button>
               {!loading ? (
                 <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
                   {cars.map((car: any) => (
-                    <Link className="p-5 group" key={"carOnSale-"+car.id} href={`/car/${car.carId}`}>
+                    <Link
+                      className="p-5 group"
+                      key={"carOnSale-" + car.carId}
+                      href={`/car/${car.carId}`}
+                    >
                       <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg sm:aspect-w-2 sm:aspect-h-3">
                         <Image
                           src={`https://ipfs.io/ipfs/${car.picture[0]}`}
@@ -75,7 +76,7 @@ export default function Home() {
                         <h3>
                           {car.brand} {car.carType}
                         </h3>
-                        <p>{car.price} ETH</p>
+                        <p>{web3.utils.fromWei(car.price, "ether")} ETH</p>
                       </div>
                       <p className="mt-1 text-sm italic text-gray-500">
                         {car.color} - {car.mileage} miles

@@ -3,22 +3,23 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { redirect } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 import { useFormik } from "formik";
 import { useEth } from "@/contexts/EthContext";
 import { useToast } from "@/hooks/useToast";
-import { Toaster } from "@/components/ui/toaster";
 
 import { create } from "ipfs-http-client";
 import { useState } from "react";
 
 import { FileUploader } from "react-drag-drop-files";
+import Link from "next/link";
 
 const fileTypes = ["JPEG", "PNG", "png", "jpg"];
 
 export default function AddCar() {
   const { toast } = useToast();
+  const router = useRouter();
   const result: any = useEth();
   const { contract, accounts, web3 } = result.state;
   const [files, setFiles] = useState([]);
@@ -36,8 +37,6 @@ export default function AddCar() {
       image: "",
     },
     onSubmit: async (values) => {
-      console.log("hey");
-
       const client = create({ url: "http://127.0.0.1:5002/api/v0" });
       const carPrice = web3.utils.toWei(values.price.toString(), "ether");
 
@@ -59,22 +58,21 @@ export default function AddCar() {
           arrayOfCid
         )
         .send({ from: accounts[0] })
-        .on("receipt", (receipt: any) => {
-          
-          redirect("/")
-          /* toast({
+        .on("receipt", () => {
+          router.push("/");
+
+          toast({
             title: "Your car has been added.",
             description:
               "If your car is on sale, you should see it on the listing.",
-          }); */
-
+          });
         })
         .catch((error: any) => {
-            toast({
-              title: "Transaction rejected!",
-              description:
-                "This transaction has been rejected, no action took place.",
-            })
+          toast({
+            title: "Transaction rejected!",
+            description:
+              "This transaction has been rejected, no action took place.",
+          });
         });
     },
   });
@@ -89,6 +87,11 @@ export default function AddCar() {
           </p>
         </div>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-3xl lg:px-8">
+          <Button className="mb-5 p-0 ">
+            <Link className="p-5" href={"/"}>
+              {"< Back"}
+            </Link>
+          </Button>
           <form
             className="space-y-8 divide-y divide-gray-200"
             onSubmit={formik.handleSubmit}

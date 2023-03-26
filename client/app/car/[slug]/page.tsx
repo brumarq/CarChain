@@ -8,6 +8,8 @@ import { Tab } from "@headlessui/react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/useToast";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const product = {
   name: "Application UI Icon Pack",
@@ -109,35 +111,39 @@ export default function Car({ params }: { params: { slug: string } }) {
       .on("receipt", (receipt: any) => {
         toast({
           title: "Car has been purchased!",
-          description:
-            "You can find the car in your catalogue!",
+          description: "You can find the car in your catalogue!",
         });
       })
       .catch((error: any) => {
-          toast({
-            title: "Transaction rejected!",
-            description:
-              "This transaction has been rejected, no action took place.",
-          })
+        toast({
+          title: "Transaction rejected!",
+          description:
+            "This transaction has been rejected, no action took place.",
+        });
       });
   };
 
   const updateCar = async () => {
     const paymentAmount = web3.utils.toWei(selectedPrice, "ether");
-    console.log(selectedOnSale);
 
     contract.methods
       .updateCar(selectedMiles, paymentAmount, selectedOnSale, car?.carId)
       .send({ from: accounts[0] })
       .on("receipt", (receipt: any) => {
-        console.log("Update successful:", receipt);
+        toast({
+          title: "Your car has been updated.",
+          description: "You should see the new values on screen.",
+        });
 
         setEdit(false);
+        getCar();
       })
       .on("error", (error: any) => {
-        console.error("Transaction failed:", error);
-
-        setEdit(false);
+        toast({
+          title: "Something went wrong with the update",
+          description:
+            "Nothing has changed, something went wrong with the update.",
+        });
       });
   };
 
@@ -155,12 +161,20 @@ export default function Car({ params }: { params: { slug: string } }) {
           <h1 className="text-4xl font-bold tracking-tight ">
             Car information
           </h1>
+
           <div className="mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
             {/* Product */}
+
             <div className="lg:grid lg:grid-cols-7 lg:grid-rows-1 lg:gap-x-8 lg:gap-y-10 xl:gap-x-16">
               {/* Product image */}
+
               <div className="lg:col-span-4 lg:row-end-1">
-                <div className="aspect-w-4 aspect-h-3 overflow-hidden rounded-lg">
+                <div className="aspect-w-4 aspect-h-3 overflow-hidden rounded-lg text-left">
+                  <Button className="mb-5 p-0 ">
+                    <Link className="p-5" href={"/"}>
+                      {"< Back"}
+                    </Link>
+                  </Button>
                   <Tab.Group as="div" className="flex flex-col-reverse">
                     {/* Image selector */}
                     <div className="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
