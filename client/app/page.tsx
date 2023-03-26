@@ -41,7 +41,7 @@ export default function Home() {
             </div>
 
             {/* Product grid */}
-            <section aria-labelledby="products-heading" className="mt-8">
+            <section aria-labelledby="products-heading" className="mt-8 h-full">
               <h2 id="products-heading" className="sr-only">
                 Products
               </h2>
