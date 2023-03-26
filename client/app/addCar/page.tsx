@@ -3,21 +3,23 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 import { useFormik } from "formik";
 import { useEth } from "@/contexts/EthContext";
 import { useToast } from "@/hooks/useToast";
-import { Toaster } from "@/components/ui/toaster";
 
 import { create } from "ipfs-http-client";
 import { useState } from "react";
 
 import { FileUploader } from "react-drag-drop-files";
+import Link from "next/link";
 
 const fileTypes = ["JPEG", "PNG", "png", "jpg"];
 
 export default function AddCar() {
   const { toast } = useToast();
+  const router = useRouter();
   const result: any = useEth();
   const { contract, accounts, web3 } = result.state;
   const [files, setFiles] = useState([]);
@@ -43,8 +45,6 @@ export default function AddCar() {
         arrayOfCid.push(result.path);
       }
 
-      console.log(arrayOfCid);
-      
       await contract.methods
         .createCar(
           values.licensePlate,
@@ -58,11 +58,20 @@ export default function AddCar() {
           arrayOfCid
         )
         .send({ from: accounts[0] })
-        .then(() => {
+        .on("receipt", () => {
+          router.push("/");
+
           toast({
             title: "Your car has been added.",
             description:
               "If your car is on sale, you should see it on the listing.",
+          });
+        })
+        .catch((error: any) => {
+          toast({
+            title: "Transaction rejected!",
+            description:
+              "This transaction has been rejected, no action took place.",
           });
         });
     },
@@ -70,7 +79,6 @@ export default function AddCar() {
 
   return (
     <div className="dark:bg-slate-900 h-100">
-      <Toaster></Toaster>
       <main>
         <div className="py-24 text-center">
           <h1 className="text-4xl font-bold tracking-tight ">Add a new car</h1>
@@ -79,6 +87,11 @@ export default function AddCar() {
           </p>
         </div>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-3xl lg:px-8">
+          <Button className="mb-5 p-0 ">
+            <Link className="p-5" href={"/"}>
+              {"< Back"}
+            </Link>
+          </Button>
           <form
             className="space-y-8 divide-y divide-gray-200"
             onSubmit={formik.handleSubmit}
