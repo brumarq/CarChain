@@ -81,7 +81,13 @@ contract CarSale is ERC721 {
     }
 
     function getCarData(uint256 carId) public view returns (Car memory) {
-        return (_cars[carId]);
+        Car memory car = _cars[carId];
+        if (car.isForSale) {
+            return car;
+        } else {
+            require(_isApprovedOrOwner(msg.sender, carId), "Only the car owner can access the data");
+            return car;
+        }
     }
 
     // This functions allows the owner to put or remove his car from sale
