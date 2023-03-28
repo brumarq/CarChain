@@ -87,3 +87,8 @@ function EthProvider({ children }: { children: React.ReactElement }) {
 }
 
 export default EthProvider;
+
+/**
+ * This code comes from the truffle box reactm it is open source and available for personal use.
+ * Link to repository: https://github.com/truffle-box/react-box
+ */
