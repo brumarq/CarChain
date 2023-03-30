@@ -151,10 +151,10 @@ export default function Car({ params }: { params: { slug: string } }) {
   });
 
   return (
-    <div className="dark:bg-slate-900 h-100">
+    <div className="dark:bg-slate-900 h-full">
       <Toaster></Toaster>
       <main>
-        <div className="py-24 text-center h-screen">
+        <div className="py-24 text-center">
           <h1 className="text-4xl font-bold tracking-tight ">
             Car information
           </h1>
